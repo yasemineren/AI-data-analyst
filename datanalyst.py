@@ -31,11 +31,46 @@ st.markdown("Excel/CSV dosyanı yükle, verilerinle sohbet et.")
 # --- KONTROL: ANAHTAR GİRİLDİ Mİ? ---
 if not api_key:
     st.warning("⚠️ Lütfen sol taraftaki menüden Google API Anahtarınızı girin ve Enter'a basın.")
-    st.stop()  # Anahtar yoksa aşağıyı çalıştırma, burada dur.
+    st.stop()
 
-# --- GEMINI KURULUMU (Kullanıcının anahtarı ile) ---
+# --- GEMINI KURULUMU ---
 try:
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error("Hatalı API Anahtarı! Lütfen kontrol edin. Hata: 
+    st.error(f"Hatalı API Anahtarı! Lütfen kontrol edin. Hata: {e}")
+    st.stop()
+
+def analyze_data(df, question):
+    """Veriyi Gemini'ye yorumlatır."""
+    data_summary = f"""
+    Sütunlar: {list(df.columns)}
+    Veri Tipleri: {list(df.dtypes)}
+    İlk 5 Satır:
+    {df.head().to_string()}
+    """
+    
+    prompt = f"""
+    Sen uzman bir Veri Analistisin. Veri özeti:
+    {data_summary}
+    
+    Kullanıcı Sorusu: "{question}"
+    
+    Lütfen bu soruyu Türkçe olarak, profesyonel bir dille yanıtla.
+    """
+    response = model.generate_content(prompt)
+    return response.text
+
+# --- DOSYA YÜKLEME VE İŞLEM ---
+uploaded_file = st.file_uploader("Dosya Yükle", type=["csv", "xlsx"])
+
+if uploaded_file:
+    try:
+        if uploaded_file.name.endswith('.csv'):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_excel(uploaded_file)
+            
+        st.success("✅ Veri Yüklendi!")
+        
+        col1, col2 = st.columns([1, 2])
