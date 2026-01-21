@@ -38,4 +38,4 @@ try:
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception as e:
-    st.error(f"Hatalı API Anahtarı! Lütfen kontrol edin. Hata: 
+    st.error("Hatalı API Anahtarı! Lütfen kontrol edin. Hata: 
