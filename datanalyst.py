@@ -74,3 +74,25 @@ if uploaded_file:
         st.success("✅ Veri Yüklendi!")
         
         col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            st.dataframe(df.head())
+            
+        with col2:
+            question = st.text_input("Veri hakkında ne bilmek istersin?")
+            if st.button("Analiz Et") and question:
+                with st.spinner("Analiz ediliyor..."):
+                    result = analyze_data(df, question)
+                    st.write(result)
+                    
+                    # Otomatik Grafik
+                    numeric_cols = df.select_dtypes(include=['float', 'int']).columns
+                    if len(numeric_cols) > 0:
+                        st.subheader("Otomatik Grafik")
+                        col_to_plot = st.selectbox("Grafik Sütunu", numeric_cols)
+                        fig, ax = plt.subplots()
+                        sns.histplot(df[col_to_plot], kde=True, ax=ax)
+                        st.pyplot(fig)
+                        
+    except Exception as e:
+        st.error(f"Hata: {e}")
